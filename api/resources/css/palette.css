@@ -1,0 +1,17 @@
+/* palette.css */
+:root {
+  --dark-blue: #0D47A1;
+  --light-blue: #42A5F5;
+  --orange: #FF9800;
+  --green: #4CAF50;
+  --grey: #9E9E9E;
+  --red: #FF0000;
+  --purple: #9C27B0;
+  --yellow: #FFEB3B;
+  --pink: #E91E63;
+  --teal: #009688;
+  --dark-grey: #333333;
+  --medium-grey: #666666;
+  --light-grey: #CCCCCC;
+  --extra-light-grey: #F5F5F5;
+}
