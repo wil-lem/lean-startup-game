@@ -1,5 +1,5 @@
 export default class GameRound {
-  constructor() {
+  constructor(featuresMap) {
     this.previousRound = null;
     this.roundNumber = 1;
     this.features = {
@@ -7,7 +7,12 @@ export default class GameRound {
       B: 0,
       C: 0,
     };
+    this.featuresMap = featuresMap;
     this.clicks = 0;
+  }
+
+  getNumber() {
+    return this.roundNumber;
   }
 
   developFeature(featureKey) {
@@ -15,7 +20,7 @@ export default class GameRound {
   }
   
   nextRound() {
-    const newRound = new GameRound();
+    const newRound = new GameRound(this.featuresMap);
     newRound.previousRound = this;
     newRound.roundNumber = this.roundNumber + 1;
     return newRound;
@@ -55,6 +60,10 @@ export default class GameRound {
     }
   }
 
+  getDevelopedFeatures() {
+    return this.features;
+  }
+
   getRetentionCustomers() {
     // =(H22)+G22+F22+E22+D22+C22+B22
     if(this.previousRound === null) {
@@ -70,12 +79,14 @@ export default class GameRound {
 
   getLoggedIn() {
     // =(I17 *0.081) + (I29*7)
-    return (this.getTotalVisitors() * 0.081) + (this.getFeatureTotal('B') * 7);
+    const key = this.getRealFeatureKey('B');
+    return (this.getTotalVisitors() * 0.081) + (this.getFeatureTotal(key) * 7);
   }
 
   getNewPayingCustomers() {
     //=I19*(0.05+(I30*0.05))
-    return this.getLoggedIn() * (0.05 + (this.getFeatureTotal('C') * 0.05));
+    const key = this.getRealFeatureKey('C');
+    return this.getLoggedIn() * (0.05 + (this.getFeatureTotal(key) * 0.05));
   }
 
   // Graph 1
@@ -86,7 +97,8 @@ export default class GameRound {
 
   getRetention() {
     // =EXP(I28)*I21
-    return Math.exp(this.getFeatureTotal('A')) * this.getReferralSale();
+    const key = this.getRealFeatureKey('A');
+    return Math.exp(this.getFeatureTotal(key)) * this.getReferralSale();
   }
 
   getTotalCustomer(round,inventory) {
@@ -97,6 +109,12 @@ export default class GameRound {
   getIncome(round,inventory) {
     // =(I22+I23)
     return this.getTotalCustomer() + this.getRetention();
+  }
+
+  getRealFeatureKey(featureKey) {
+    const baseFeatures = ['A','B','C'];
+    const index = baseFeatures.indexOf(featureKey);
+    return this.featuresMap[index];
   }
 
   getFeatureTotal(featureKey) {

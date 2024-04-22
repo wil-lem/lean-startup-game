@@ -1,6 +1,7 @@
 <template>
   <div class="chart-dscwds">
-    <Line :data="getChartData()" :options="getChartOptions()" />
+    <Bar v-if="isBar" :data="getChartData()" :options="getChartOptions()" />
+    <Line v-if="isLine" :data="getChartData()" :options="getChartOptions()" />
   </div>
 </template>
 
@@ -12,17 +13,19 @@ import {
   LinearScale,
   PointElement,
   LineElement,
+  BarElement,
   Title,
   Tooltip,
   Legend
 } from 'chart.js'
-import { Line } from 'vue-chartjs'
+import { Line, Bar } from 'vue-chartjs'
 import ActionItem from '../classes/actionItem'
 ChartJS.register(
   CategoryScale,
   LinearScale,
   PointElement,
   LineElement,
+  BarElement,
   Title,
   Tooltip,
   Legend
@@ -31,7 +34,7 @@ ChartJS.register(
 
 export default {
   components: {
-    Line
+    Line, Bar
   },
   props: {
     dashboard: {
@@ -42,6 +45,15 @@ export default {
   
   mounted() {
     // this.renderGraph();
+  },
+
+  computed: {
+    isBar() {
+      return this.dashboard.getChartType() === 'bar';
+    },
+    isLine() {
+      return this.dashboard.getChartType() === 'line';
+    }
   },
 
   methods: {
@@ -63,10 +75,12 @@ export default {
         datasets: datasets
       };
     },
+
+
     getChartOptions() {
-      return {
-        responsive: true
-      };
+      const options = this.dashboard.getChartOptions();
+      options.responsive = true;
+      return options;
     },
 
 

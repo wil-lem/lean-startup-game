@@ -1,13 +1,14 @@
 <template>
   <div class="game-actions-inner">
+    <div><strong>Budget: </strong>${{ this.budget.toFixed(2) }}</div>
+    <div><strong>Round: </strong>{{ this.roundNumber }}</div>
     <div class="shopping-cart">
       <h2>Selected Items:</h2>  
-      <game-action-item v-for="item in selectedItems" :key="item.id" :actionItem="item" @onClickItem="deselectItem(item)" />
-    
+      <game-action-item v-for="item in selectedItems" :key="item.id" :actionItem="item" @onClickItem="deselectItem(item)" />  
     </div>
     <div class="total" v-if="selectedItems.length > 0">
-      <span>${{ cartTotal.toFixed(2) }} </span><br />
-      <span>Remaining actions: {{ maxActions - selectedItems.length }}</span>
+      <span><strong>Total: </strong>${{ cartTotal.toFixed(2) }} </span><br />
+      <span>Remaining actions: {{ remainingActions }}</span>
     
       <div>
         <button-component :onClick="buyItems" primary="true">Buy</button-component>
@@ -36,14 +37,22 @@ export default {
     inventory: {
       type: Array,
       default: () => []
+    },
+    budget: {
+      type: Number,
+      required: true
+    },
+    roundNumber: {
+      type: Number,
+      required: true
     }
   },
   data() {
     return {
       selectedItems: [], // Array to store selected items
       selectableItems: [], // Array to store selectable items
-      total: 0, // Variable to store total price
-      remainingBudget: 0, // Variable to store remaining budget
+      // total: 0, // Variable to store total price
+      // remainingBudget: 0, // Variable to store remaining budget
       maxActions: 4,
     };
   },
@@ -82,6 +91,42 @@ export default {
     item.setIcon('cursor-default-click-outline');
     item.setMultiple(true);
     this.selectableItems.push(item);
+
+    item = new actionItem('D5', 0, 'Income dashboard');
+    item.setActionName('Buy Income Dashboard');
+    item.setIcon('chart-line');
+    item.setMultiple(false);
+    item.addDashboardDataCallback('getIncome');
+    item.addColor('purple');
+    item.addChartLabel('Income');
+    this.selectableItems.push(item);
+
+    this.$emit('addToInventory', item.clone());
+
+    item = new actionItem('D6', 0, 'Developed Features Dashboard');
+    item.setActionName('Buy develeoped features Dashboard');
+    item.setIcon('chart-timeline');
+    item.setMultiple(false);
+    item.addDashboardDataCallback('getDevelopedFeatures');
+    item.addColor('green');
+    item.addChartLabel('Feature development');
+    item.setChartType('bar');
+    this.selectableItems.push(item);
+
+    this.$emit('addToInventory', item.clone());
+
+    
+
+    // item = new actionItem('D6', 0, 'Total visitors dashboard');
+    // item.setActionName('Buy Total visitors Dashboard');
+    // item.setIcon('chart-line');
+    // item.setMultiple(false);
+    // item.addDashboardDataCallback('getTotalVisitors');
+    // item.addColor('cyan');
+    // item.addChartLabel('Total visitors');
+    // this.selectableItems.push(item);
+
+    
 
     item = new actionItem('D1', 100, 'Referral sales');
     item.setActionName('Buy Referral Sales Dashboard');
@@ -124,15 +169,51 @@ export default {
     this.selectableItems.push(item);
 
     // Set the initial budget
-    this.remainingBudget = 1000;
+    this.remainingBudget = this.budget;
   },
 
   computed: {
     cartTotal() {
       return this.selectedItems.reduce((ctotal, item) => ctotal + item.getPrice(), 0);
     },
+
+    remainingActions() {
+      return this.maxActions - this.selectedItems.length;
+    },
+
+    
     selectableItemsFiltered() {
+      let clicksSelected = this.selectedItems.filter((selectedItem) => selectedItem.isClicksItem()).length > 0;
+      
+      if(this.remainingActions === 0) {
+        return [];
+      }
+
+      // If the cheapest clicks item is more expensive than the remaining budget, 
+      // set clickselected to true so we only see other items.
+      let cheapestClickItem = this.selectableItems.filter((item) => {
+        if (item.isClicksItem()) {
+          return true;
+        }
+      }).sort((a, b) => a.getPrice() - b.getPrice())[0];
+      if(cheapestClickItem) {
+        if(cheapestClickItem.getPrice() > this.budget - this.cartTotal) {
+          clicksSelected = true;
+        }
+      }
+      
       return this.selectableItems.filter((item) => {
+        
+        if(clicksSelected && item.isClicksItem()) {
+          return false;
+        }
+        if(!clicksSelected && !item.isClicksItem()) {
+          return false;
+        }
+
+        if(item.getPrice() > this.budget - this.cartTotal) {
+          return false;
+        }
         if(item.isMultiple()) {
           return true;
         } else {
@@ -157,21 +238,22 @@ export default {
         return;
       }
       this.selectedItems.push(item.clone());
+      this.total += item.getPrice();
     },
     deselectItem(item) {
       const key = this.selectedItems.indexOf(item);
       if (key > -1) {
         this.selectedItems.splice(key, 1);
       }
+
+      this.total -= item.getPrice();
     },
     buyItems() {
       this.$emit('buyItems', this.selectedItems);
       this.selectedItems = [];
-  
     },
     resetCart() {
       this.selectedItems = [];
-      this.remainingBudget += this.total;
     },
 
 

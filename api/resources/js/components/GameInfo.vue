@@ -1,20 +1,42 @@
 <template>
-  <div class="container">
-    <div class="charts-container" v-if="dashboards.length > 0">
-      
-      <!-- Render each dashboard component -->
-      <dashboard :style="getChartStye()" v-for="dashboard in dashboards" :key="dashboard.id" :dashboard="dashboard" />
+  <div>
+    
+    <div class="container" v-if="dashboards.length > 0">  
+      <div class="charts-container info-card" v-for="dashboard in dashboards" :key="dashboard.id">
+
+        
+        <!-- Render each dashboard component -->
+        <dashboard :dashboard="dashboard" />
+      </div>
     </div>
-    <div v-else class="empty-message">
-      <!-- Display a message if no dashboards found -->
-      No dashboards yet
+    
+    <div class="container">
+      <div class="info-card">
+        <h2>User feedback:</h2>
+        <div class="opinion-cards">
+          <div class="opinion-card" v-for="(card, key) in opinions" :key="key" :class="{ closed: !card.opened }">
+            <div v-if="card.opened">{{ card.letter }}</div> 
+            <div v-else>?</div>   
+          </div>
+        </div>
+      </div>
+      <div class="info-card">
+        <h2>History</h2>
+        <div class="history-container">
+          <div class="history-item" v-for="item in inventory" :key="item.id">
+            {{ item.describe() }}
+          </div>
+        </div>
+      </div>
     </div>
   </div>
+  
 </template>
 
 <script>
 import Dashboard from './Dashboard.vue'; // Import the Dashboard component
 import ActionItem from '../classes/actionItem';
+import GameRound from '../classes/gameRound.js';
 
 export default {
   name: 'GameInfo',
@@ -22,7 +44,24 @@ export default {
     inventory: {
       type: Array,
       default: () => []
+    },
+    opinions: {
+      type: Object,
+      default: () => {}
+    },
+    round: {
+      type: GameRound,
+      required: true
     }
+  },
+  data() {
+    return {
+      opionCards: [],
+    };
+  },
+  mounted() {
+    
+
   },
   components: {
     Dashboard // Register the Dashboard component
@@ -51,6 +90,7 @@ export default {
       };
     }
   },
+
   computed: {
     dashboards() {
       return this.inventory.filter(item => item.isDashboardItem());
@@ -64,19 +104,21 @@ export default {
 .container {
   height: 100%;
   width: 100%;
-}
-
-.charts-container {
-  width: 100%;
-  height: 100%;
   display: flex;
   flex-wrap: wrap;
+
+}
+.info-card {
+  width: calc(50% - 40px);
+  margin-right: 20px;
+  background: white;
+  padding: 10px;
+  margin-bottom: 20px;
+  /* min-height: 200px; */
 }
 
-.chart-wrapper {
-  /* flex: 1 0 20%; */
-  width:100px;
-  height: 48%;
+.info-card:nth-child(even) {
+  margin-right: 0px;
 }
 
 .empty-message {
@@ -86,6 +128,32 @@ export default {
   color: var(--light-grey);
   font-style: italic;
   
+}
+
+.opinion-cards {
+
+  display: flex;
+  justify-content: left;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.opinion-cards .opinion-card {
+  width: 40px;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2em;
+  font-weight: bold;
+  background-color: var(--light-grey);
+  margin-right: 5px;
+  margin-bottom: 5px;
+  border-radius: 5px;
+}
+
+.opinion-cards .opinion-card.closed {
+  background-color: var(--extra-light-grey);
 }
 
 </style>

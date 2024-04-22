@@ -13,7 +13,7 @@ export default {
     actionItem: {
       type: ActionItem,
       required: true
-    }
+    },
   },
   // data() {
   //   // Your data properties here
@@ -29,7 +29,6 @@ export default {
       return this.actionItem.getIcon()
     },
     selectItem() {
-      
       this.$emit('onClickItem')
     }
   },

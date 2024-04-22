@@ -18,6 +18,9 @@ export default class ActionItem {
     this.dataLabels = [];
 
     this.colors = [];
+
+    this.chartType = 'line';
+
   }
 
   clone() {
@@ -25,9 +28,11 @@ export default class ActionItem {
     clone.setQuantity(this.quantity);
     clone.setIcon(this.icon);
     clone.setMultiple(this.multiple);
+    clone.setChartType(this.chartType);
     clone.dataCallbacks = this.dataCallbacks.slice(0);
     clone.dataLabels = this.dataLabels.slice(0);
     clone.colors = this.colors.slice(0);
+    
     return clone;
   }
 
@@ -37,6 +42,14 @@ export default class ActionItem {
 
   getName() {
     return this.name;
+  }
+
+  getChartType() {
+    return this.chartType;
+  }
+
+  setChartType(chartType) {
+    this.chartType = chartType;
   }
 
   getDataLabel(index) { 
@@ -112,6 +125,18 @@ export default class ActionItem {
     return this.id.startsWith('D');
   }
 
+  isClicksItem() {
+    return this.id.startsWith('C');
+  }
+
+  isFeatureItem() {
+    return this.id.startsWith('F');
+  }
+
+  isTalkItem() {
+    return this.id.startsWith('T');
+  }
+
   addDashboardDataCallback(callback) {
     this.dataCallbacks.push(callback);
   }
@@ -131,6 +156,22 @@ export default class ActionItem {
       return;
     }
 
+    if(this.dataCallbacks[0] == 'getDevelopedFeatures') {
+      
+      const vals = [0,0,0];
+      const labels = ['A', 'B', 'C'];
+
+      while(round) {
+        for(let i = 0; i < labels.length; i++) {
+          vals[i] += round.getDevelopedFeatures()[labels[i]];
+        }
+        round = round.previousRound;
+      }
+      this.dataValues[0] = vals;
+      
+      return;
+    }
+    
     // We can have multiple datasets for a single dashboard item
     // each dataset has a different callback
     for (let i = 0; i < this.dataCallbacks.length; i++) {
@@ -165,7 +206,21 @@ export default class ActionItem {
     return data;
   }
 
+  getChartOptions() {
+    const options = {};
+    if(this.dataCallbacks[0] == 'getDevelopedFeatures') {
+      options.indexAxis = 'y';
+    }
+
+    return options;
+  }
+
+  setBoughtInRound(round) {
+    this.boughtInRound = round;
+  }
+
   calculateDataValue(roundNumber,round) {
+    
     while(roundNumber > round.roundNumber) {
       round = round.previousRound;
     }
@@ -186,9 +241,27 @@ export default class ActionItem {
 
   getLabels() {
     // return [1,2,3,4]
+    if(this.dataCallbacks[0] == 'getDevelopedFeatures') {
+      return ['Feature A', 'Feature B', 'Feature C']
+    }
+
     return this.dataValues[0].map((value, index) => index + 1);
   }
 
+  describe() {
+    let roundNumber = '?';
+    if(this.boughtInRound !== null) {
+      roundNumber = this.boughtInRound.roundNumber;
+    }
+    if(this.isDashboardItem()) {
+      return 'Bought dashboard: ' + this.name + ' in round ' + roundNumber;
+    } else if(this.isClicksItem()) {
+      return 'Bought ' + this.name + ' in round ' + roundNumber;
+    } else if(this.isFeatureItem()) {
+      return 'Developed feature ' + this.id.substring(1) + ' in round ' + roundNumber;
+    }
+    return 'Talked to 3 customers in round ' + roundNumber;
+  }
 
 }
 
