@@ -76,7 +76,7 @@ export default {
       featuresMap: [],
       locations: {
         'ABC': 'Rotterdam',
-        'ACB': 'New Yord',
+        'ACB': 'New York',
         'BAC': 'Tokyo',
         'BCA': 'Berlin',
         'CAB': 'London',
