@@ -1,3 +1,5 @@
+import { Ticks } from "chart.js";
+
 export default class ActionItem {
   constructor(id, price, name) {
     this.id = id;
@@ -211,6 +213,14 @@ export default class ActionItem {
     if(this.dataCallbacks[0] == 'getDevelopedFeatures') {
       options.indexAxis = 'y';
     }
+    options.scales = {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          stepSize: 1,
+        }
+      }
+    };
 
     return options;
   }
