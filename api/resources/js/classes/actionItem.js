@@ -1,4 +1,4 @@
-import { Ticks } from "chart.js";
+import { Ticks, scales } from "chart.js";
 
 export default class ActionItem {
   constructor(id, price, name) {
@@ -23,6 +23,7 @@ export default class ActionItem {
 
     this.chartType = 'line';
 
+    this.showInHistory = true;
   }
 
   clone() {
@@ -34,6 +35,7 @@ export default class ActionItem {
     clone.dataCallbacks = this.dataCallbacks.slice(0);
     clone.dataLabels = this.dataLabels.slice(0);
     clone.colors = this.colors.slice(0);
+    clone.showInHistory = this.showInHistory;
     
     return clone;
   }
@@ -123,6 +125,15 @@ export default class ActionItem {
     this.actionName = actionName;
   }
 
+  hideInHistory() {
+    this.showInHistory = false;
+  }
+
+  getShowInHistory() {
+    return this.showInHistory;
+  }
+    
+
   isDashboardItem() {
     return this.id.startsWith('D');
   }
@@ -209,18 +220,26 @@ export default class ActionItem {
   }
 
   getChartOptions() {
-    const options = {};
+    const options = {
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            stepSize: 1,
+          }
+        }
+      }
+    };
     if(this.dataCallbacks[0] == 'getDevelopedFeatures') {
       options.indexAxis = 'y';
-    }
-    options.scales = {
-      y: {
+      options.scales.x = {
         beginAtZero: true,
         ticks: {
           stepSize: 1,
         }
-      }
-    };
+      };
+    }
+    
 
     return options;
   }
@@ -264,13 +283,13 @@ export default class ActionItem {
       roundNumber = this.boughtInRound.roundNumber;
     }
     if(this.isDashboardItem()) {
-      return 'Bought dashboard: ' + this.name + ' in round ' + roundNumber;
+      return 'Bought dashboard: ' + this.name;
     } else if(this.isClicksItem()) {
-      return 'Bought ' + this.name + ' in round ' + roundNumber;
+      return 'Bought ' + this.name;
     } else if(this.isFeatureItem()) {
-      return 'Developed feature ' + this.id.substring(1) + ' in round ' + roundNumber;
+      return 'Developed feature ' + this.id.substring(1);
     }
-    return 'Talked to 3 customers in round ' + roundNumber;
+    return 'Talked to 2 customers';
   }
 
 }

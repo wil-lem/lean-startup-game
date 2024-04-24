@@ -23,8 +23,8 @@
       <div class="info-card">
         <h2>History</h2>
         <div class="history-container">
-          <div class="history-item" v-for="item in inventory" :key="item.id">
-            {{ item.describe() }}
+          <div class="history-item" v-for="item in history" :key="item.id">
+            {{ item }}
           </div>
         </div>
       </div>
@@ -66,6 +66,7 @@ export default {
   components: {
     Dashboard // Register the Dashboard component
   },
+  
   methods: {
     getChartStye() {
       let width = 100;
@@ -94,6 +95,24 @@ export default {
   computed: {
     dashboards() {
       return this.inventory.filter(item => item.isDashboardItem());
+    },
+
+    history() {
+
+      let history = this.inventory.filter(item => item.getShowInHistory());
+      let lastRound = null;
+      let complete = [];
+
+      for(let i = 0; i < history.length; i++) {
+        let item = history[i];
+        if(item.boughtInRound !== lastRound) {
+          complete.push(' - ')
+          complete.push('Round ' + item.boughtInRound.roundNumber);
+          lastRound = item.boughtInRound;
+        }
+        complete.push(item.describe());
+      } 
+      return complete;
     }
   },
 

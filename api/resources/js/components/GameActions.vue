@@ -99,6 +99,7 @@ export default {
     item.addDashboardDataCallback('getIncome');
     item.addColor('purple');
     item.addChartLabel('Income');
+    item.hideInHistory();
     this.selectableItems.push(item);
 
     this.$emit('addToInventory', item.clone());
@@ -111,6 +112,7 @@ export default {
     item.addColor('green');
     item.addChartLabel('Feature development');
     item.setChartType('bar');
+    item.hideInHistory();
     this.selectableItems.push(item);
 
     this.$emit('addToInventory', item.clone());
