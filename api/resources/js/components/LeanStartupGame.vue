@@ -6,7 +6,7 @@
       <h1>Lean agile startup game</h1>
       <small>{{ playLocation }} edition</small>
     </div>
-    <div id="wrapper" ref="wrapper">
+    <div id="wrapper" ref="wrapper" v-if="loggedIn">
       <div class='game-actions'>
         <game-actions v-if="gameUid && round && round.getNumber() < 9" 
           :inventory="inventory" 
@@ -38,6 +38,23 @@
         <game-info :inventory="inventory" :opinions="opionCards" :round="round" />
       </div>
     </div>
+    <div v-else class="login-form">
+      <h2>Login</h2>
+      <form @submit.prevent="handleLogin">
+        <div class="row">
+          <label for="username">Username:</label>
+          <input type="text" id="username" v-model="username" required>
+        </div>
+        <div class="row">
+          <label for="password">Password:</label>
+          <input type="password" id="password" v-model="password" required>
+        </div>
+        <div class="row" v-if="loginError">
+          <span style="color: red">{{ loginError }}</span>
+        </div>
+        <button type="submit">Login</button>
+      </form>
+    </div>
   </div>
  
 </template>
@@ -46,6 +63,7 @@
 import GameRound from '../classes/gameRound.js';
 import GameActions from './GameActions.vue';
 import GameInfo from './GameInfo.vue';
+import CryptoJS from 'crypto-js';
 import '../../css/palette.css'
 
 // import BlockSelect from './BlockSelect.vue';
@@ -74,6 +92,15 @@ export default {
       inventory: [],
       opionCards: [],
       featuresMap: [],
+      loggedIn: false,
+      
+      username: '',
+      password: '',
+      hash: '5117d3615b510485a82ee8660741fc2a',
+      loginError: '',
+
+
+
       locations: {
         'ABC': 'Rotterdam',
         'ACB': 'New York',
@@ -139,6 +166,18 @@ export default {
 
     async newGame() {
       const response = await this.$axios.post('/api/game/new');
+    },
+
+    handleLogin() {
+      const usernameAndPassword = this.username + '&' + this.password;
+      const hashedCredentials = CryptoJS.MD5(usernameAndPassword).toString();
+
+      this.loginError = '';
+      if(hashedCredentials === this.hash) {
+        this.loggedIn = true;
+      } else {
+        this.loginError = 'Ongeldige inloggegevens';
+      }
     },
 
     addToInventory(item) {
@@ -215,5 +254,20 @@ export default {
   flex-grow: 1;
   margin-left: 20px;
   padding: 20px;
+}
+
+.login-form {
+  margin-top: 20px;
+  padding: 20px;
+  background-color: var(--extra-light-grey);
+}
+
+.row {
+  margin-bottom: 10px;
+  display: flex;
+}
+
+.row label {
+  width: 100px;
 }
 </style>
