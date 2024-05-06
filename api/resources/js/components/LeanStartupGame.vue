@@ -148,6 +148,7 @@ export default {
       this.opionCards.push(randomCard);
     }
 
+    window._paq.push(['trackPageView'])
   },
 
   computed: {
@@ -175,6 +176,8 @@ export default {
       this.loginError = '';
       if(hashedCredentials === this.hash) {
         this.loggedIn = true;
+        window._paq.push(['trackEvent', 'User', 'Login']);
+
       } else {
         this.loginError = 'Ongeldige inloggegevens';
       }
@@ -210,6 +213,7 @@ export default {
         this.inventory.push(item);
       }
 
+      window._paq.push(['trackEvent', 'Game', 'BuyItems', this.round.getNumber()]);
       this.round = this.round.nextRound()
       this.round.parseInventory(items);
 
