@@ -176,7 +176,7 @@ How to generate `APP_KEY`:
 
 1. Installs PHP and Node dependencies (`composer install`, `npm ci`).
 2. Builds frontend assets (`npm run build`).
-3. Caches Laravel config/routes/views for production.
+3. Caches Laravel config/routes for production.
 4. Starts Laravel on `0.0.0.0:${PORT}` so Traefik can route traffic to the container.
 
 ### Notes
@@ -218,6 +218,17 @@ After changing config:
 1. Save and push changes.
 2. In Coolify, trigger a fresh redeploy.
 3. If your Coolify version supports it, clear build cache once before redeploy.
+
+### Troubleshooting: "View path not found" during `php artisan view:cache`
+
+If build fails at `php artisan view:cache` with `View path not found.`:
+
+1. Use the current `nixpacks.toml` in this repo (it does not run `view:cache` during image build).
+2. Redeploy.
+
+Reason:
+
+- Some build-time environments provide Laravel env/config values that make view cache path resolution fail during image build, while runtime rendering still works normally.
 
 ## Project Map (app layer)
 
