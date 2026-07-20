@@ -71,7 +71,7 @@ Note: most gameplay mechanics (round logic, inventory updates, opinion cards) cu
 
 ## Local Development (without Docker)
 
-From the `api` directory:
+From the repository root:
 
 1. Install PHP dependencies
 	- `composer install`
@@ -99,7 +99,7 @@ This app now includes `nixpacks.toml` and a startup script at `scripts/start.sh`
 
 1. Create an application in Coolify from this Git repository.
 2. Set **Build Pack** to `Nixpacks`.
-3. Set **Base Directory** to `api`.
+3. Set **Base Directory** to repository root (`/` or empty, depending on your Coolify version).
 4. Set a public domain on the service (Traefik handles TLS and routing).
 5. Expose the service as HTTP (container listens on `${PORT}` passed by platform).
 
@@ -169,7 +169,7 @@ RUN_MIGRATIONS=true
 
 How to generate `APP_KEY`:
 
-1. Run once in the `api` directory: `php artisan key:generate --show`
+1. Run once in the repository root: `php artisan key:generate --show`
 2. Copy the returned `base64:...` value into Coolify as `APP_KEY`
 
 ### What Nixpacks does in this project
@@ -190,14 +190,14 @@ How to generate `APP_KEY`:
 If Coolify shows this error:
 
 1. Verify **Build Pack** is `Nixpacks`.
-2. Prefer **Base Directory** = `api`.
-3. If your service builds from repository root, keep it that way and use the repository-root `nixpacks.toml` (already included in this repo).
+2. Set **Base Directory** to repository root (`/` or empty).
+3. Ensure `nixpacks.toml` is at that same root (already true in this repo).
 4. Redeploy after saving settings.
 
 Why this happens:
 
 - Nixpacks auto-detection checks the selected app root for framework files (`composer.json`, `package.json`, etc.).
-- In this repository, the Laravel app is in `api`, so detection fails when the wrong source directory is used and no root-level fallback config exists.
+- Nixpacks must run from the directory containing `composer.json` and `package.json` (now repository root).
 
 ## Project Map (app layer)
 
