@@ -5,6 +5,17 @@
 /public/storage
 /storage/*.key
 /storage/*
+!/storage/app/
+!/storage/framework/
+!/storage/logs/
+/storage/app/*
+!/storage/app/public/
+/storage/framework/*
+!/storage/framework/cache/
+!/storage/framework/sessions/
+!/storage/framework/views/
+/storage/framework/cache/*
+!/storage/framework/cache/data/
 /vendor
 .env
 .env.backup
