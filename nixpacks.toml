@@ -1,0 +1,18 @@
+providers = ["php", "node"]
+
+[phases.install]
+cmds = [
+  "cd api && composer install --no-dev --optimize-autoloader --no-interaction",
+  "cd api && npm ci"
+]
+
+[phases.build]
+cmds = [
+  "cd api && npm run build",
+  "cd api && php artisan config:cache",
+  "cd api && php artisan route:cache",
+  "cd api && php artisan view:cache"
+]
+
+[start]
+cmd = "cd api && bash ./scripts/start.sh"

@@ -185,6 +185,20 @@ How to generate `APP_KEY`:
 - If you enable `RUN_MIGRATIONS=true`, keep at least one healthy instance during rolling updates to avoid downtime on long migrations.
 - Current application logic still has API route mismatches (`/api/game/new` method name and missing `/api/game/join` backend route), which affect gameplay API actions after deployment.
 
+### Troubleshooting: "Nixpacks failed to detect the application type"
+
+If Coolify shows this error:
+
+1. Verify **Build Pack** is `Nixpacks`.
+2. Prefer **Base Directory** = `api`.
+3. If your service builds from repository root, keep it that way and use the repository-root `nixpacks.toml` (already included in this repo).
+4. Redeploy after saving settings.
+
+Why this happens:
+
+- Nixpacks auto-detection checks the selected app root for framework files (`composer.json`, `package.json`, etc.).
+- In this repository, the Laravel app is in `api`, so detection fails when the wrong source directory is used and no root-level fallback config exists.
+
 ## Project Map (app layer)
 
 - `routes/web.php`: web entry route (`/`)
