@@ -91,6 +91,52 @@ From the `api` directory:
 
 Open the app URL shown by Laravel (usually `http://127.0.0.1:8000`).
 
+## Deploy with Coolify + Traefik (Nixpacks)
+
+This app now includes `nixpacks.toml` and a startup script at `scripts/start.sh` to support deployment via Coolify using Nixpacks.
+
+### Coolify service settings
+
+1. Create an application in Coolify from this Git repository.
+2. Set **Build Pack** to `Nixpacks`.
+3. Set **Base Directory** to `api`.
+4. Set a public domain on the service (Traefik handles TLS and routing).
+5. Expose the service as HTTP (container listens on `${PORT}` passed by platform).
+
+### Required environment variables
+
+At minimum:
+
+- `APP_NAME=Lean Startup Game`
+- `APP_ENV=production`
+- `APP_DEBUG=false`
+- `APP_KEY=base64:...` (generate once with `php artisan key:generate --show`)
+- `APP_URL=https://your-domain.example`
+- `LOG_CHANNEL=stack`
+- `DB_CONNECTION=mysql`
+- `DB_HOST=<coolify-db-hostname>`
+- `DB_PORT=3306`
+- `DB_DATABASE=<db-name>`
+- `DB_USERNAME=<db-user>`
+- `DB_PASSWORD=<db-password>`
+
+Optional:
+
+- `RUN_MIGRATIONS=true` to run `php artisan migrate --force` on container start.
+
+### What Nixpacks does in this project
+
+1. Installs PHP and Node dependencies (`composer install`, `npm ci`).
+2. Builds frontend assets (`npm run build`).
+3. Caches Laravel config/routes/views for production.
+4. Starts Laravel on `0.0.0.0:${PORT}` so Traefik can route traffic to the container.
+
+### Notes
+
+- This app uses API endpoints for game creation and player persistence, so a database service is required in production.
+- If you enable `RUN_MIGRATIONS=true`, keep at least one healthy instance during rolling updates to avoid downtime on long migrations.
+- Current application logic still has API route mismatches (`/api/game/new` method name and missing `/api/game/join` backend route), which affect gameplay API actions after deployment.
+
 ## Project Map (app layer)
 
 - `routes/web.php`: web entry route (`/`)
