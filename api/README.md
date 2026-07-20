@@ -113,16 +113,64 @@ At minimum:
 - `APP_KEY=base64:...` (generate once with `php artisan key:generate --show`)
 - `APP_URL=https://your-domain.example`
 - `LOG_CHANNEL=stack`
+- `LOG_LEVEL=info`
 - `DB_CONNECTION=mysql`
 - `DB_HOST=<coolify-db-hostname>`
 - `DB_PORT=3306`
 - `DB_DATABASE=<db-name>`
 - `DB_USERNAME=<db-user>`
 - `DB_PASSWORD=<db-password>`
+- `SESSION_DRIVER=file`
+- `CACHE_DRIVER=file`
+- `QUEUE_CONNECTION=sync`
 
 Optional:
 
 - `RUN_MIGRATIONS=true` to run `php artisan migrate --force` on container start.
+- `ASSET_URL=https://your-domain.example` when serving assets from a CDN or separate host.
+- `MAIL_*` values when sending real email from production.
+- `REDIS_*` values when using redis-backed cache/session/queue.
+- `AWS_*` values when using S3 storage.
+- `SANCTUM_STATEFUL_DOMAINS` only if you later use Sanctum SPA auth across domains.
+
+### Coolify env setup steps
+
+1. Open your application in Coolify.
+2. Go to the **Environment Variables** tab.
+3. Add all required variables from the list above.
+4. Save, then trigger **Redeploy**.
+5. Check deployment logs for `Application key set successfully` (if set during build), successful Laravel boot, and successful DB connection.
+
+Suggested starter values for Coolify:
+
+```env
+APP_NAME="Lean Startup Game"
+APP_ENV=production
+APP_DEBUG=false
+APP_KEY=base64:REPLACE_WITH_GENERATED_KEY
+APP_URL=https://your-domain.example
+
+LOG_CHANNEL=stack
+LOG_LEVEL=info
+
+DB_CONNECTION=mysql
+DB_HOST=REPLACE_WITH_DATABASE_HOST
+DB_PORT=3306
+DB_DATABASE=REPLACE_WITH_DATABASE_NAME
+DB_USERNAME=REPLACE_WITH_DATABASE_USER
+DB_PASSWORD=REPLACE_WITH_DATABASE_PASSWORD
+
+SESSION_DRIVER=file
+CACHE_DRIVER=file
+QUEUE_CONNECTION=sync
+
+RUN_MIGRATIONS=true
+```
+
+How to generate `APP_KEY`:
+
+1. Run once in the `api` directory: `php artisan key:generate --show`
+2. Copy the returned `base64:...` value into Coolify as `APP_KEY`
 
 ### What Nixpacks does in this project
 
