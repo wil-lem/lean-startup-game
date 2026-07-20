@@ -6,7 +6,7 @@ This README focuses on the application layer only (backend + frontend) and inten
 
 ## Stack
 
-- Backend: Laravel 10, PHP 8.1+, Eloquent ORM, API and web routes
+- Backend: Laravel 10, PHP 8.2+, Eloquent ORM, API and web routes
 - Frontend: Vue 3 (single mounted app), Vite, Axios, Chart.js, Vue Matomo
 - Database: Laravel migrations for `games` and `players`
 
