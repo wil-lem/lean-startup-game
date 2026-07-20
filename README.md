@@ -199,6 +199,26 @@ Why this happens:
 - Nixpacks auto-detection checks the selected app root for framework files (`composer.json`, `package.json`, etc.).
 - Nixpacks must run from the directory containing `composer.json` and `package.json` (now repository root).
 
+### Troubleshooting: Nix profile conflict during build
+
+If you see an error like:
+
+- `Unable to build profile. There is a conflict for ... node ... lldb_commands.py`
+
+Use this repo's current Nixpacks config (single provider):
+
+- `providers = ["php"]` in `nixpacks.toml`
+
+Reason:
+
+- Enabling both `php` and `node` providers can install two different Node toolchains in separate Nix profile generations, which may conflict on shared doc files.
+
+After changing config:
+
+1. Save and push changes.
+2. In Coolify, trigger a fresh redeploy.
+3. If your Coolify version supports it, clear build cache once before redeploy.
+
 ## Project Map (app layer)
 
 - `routes/web.php`: web entry route (`/`)
