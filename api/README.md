@@ -1,66 +1,110 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Lean Startup Game (App Layer)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+This repository contains a Laravel 10 backend and a Vue 3 frontend for a classroom-style lean startup simulation game.
 
-## About Laravel
+This README focuses on the application layer only (backend + frontend) and intentionally ignores Docker runtime details.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Stack
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- Backend: Laravel 10, PHP 8.1+, Eloquent ORM, API and web routes
+- Frontend: Vue 3 (single mounted app), Vite, Axios, Chart.js, Vue Matomo
+- Database: Laravel migrations for `games` and `players`
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## High-Level Architecture
 
-## Learning Laravel
+1. Browser requests `/`.
+2. Laravel web route renders `resources/views/welcome.blade.php`.
+3. Vite loads `resources/js/app.js`.
+4. Vue mounts `LeanStartupGame.vue` into `#app`.
+5. Vue sends Axios calls to Laravel API endpoints under `/api/*`.
+6. Laravel controllers use Eloquent models to create/read rows in MySQL/PostgreSQL/SQLite.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Backend and Frontend Interaction
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### Frontend entry and mount
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- `resources/views/welcome.blade.php` serves the HTML shell and Vite bundle.
+- `resources/js/app.js` creates and mounts Vue, registers `lean-startup-game`, and injects Axios via `app.config.globalProperties.$axios`.
 
-## Laravel Sponsors
+### API calls made by the frontend
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+In `resources/js/components/LeanStartupGame.vue`:
 
-### Premium Partners
+- `newGame()` calls `POST /api/game/new`
+- `joinGame()` calls `POST /api/game/join`
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+### Backend API routes and controllers
 
-## Contributing
+In `routes/api.php`:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+- Registered route: `POST /api/game/new` -> `GameController::new`
 
-## Code of Conduct
+In controllers:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+- `app/Http/Controllers/GameController.php` currently defines `post()` (not `new()`)
+- `app/Http/Controllers/PlayerController.php` defines `post()` with validation and `Player::create(...)`, but no route is currently wired for it
 
-## Security Vulnerabilities
+### Important current mismatch
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+There is a route/controller mismatch and a missing route:
 
-## License
+1. `POST /api/game/new` points to `GameController::new`, but `GameController` only has `post()`.
+2. Frontend calls `POST /api/game/join`, but no `/api/game/join` route exists.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+As-is, those frontend API actions will fail until route/controller names are aligned and join route behavior is implemented.
+
+## Does the app need database access?
+
+Short answer: yes, for API-backed game/session persistence.
+
+Why:
+
+- `GameController` uses `Game::create()`.
+- `PlayerController` validates `exists:games,id` and creates `Player` rows.
+- Migrations create concrete tables:
+  - `database/migrations/2024_03_25_203836_create_games_table.php`
+  - `database/migrations/2024_03_25_204302_create_players_table.php`
+
+Without a configured database and migrated schema, backend API endpoints that create or validate games/players will fail.
+
+Note: most gameplay mechanics (round logic, inventory updates, opinion cards) currently run in frontend memory in Vue classes/components.
+
+## Local Development (without Docker)
+
+From the `api` directory:
+
+1. Install PHP dependencies
+	- `composer install`
+2. Create environment file
+	- `cp .env.example .env`
+3. Generate app key
+	- `php artisan key:generate`
+4. Configure database in `.env` (`DB_*` values)
+5. Run migrations
+	- `php artisan migrate`
+6. Install frontend dependencies
+	- `npm install`
+7. Start Laravel server
+	- `php artisan serve`
+8. Start Vite dev server
+	- `npm run dev`
+
+Open the app URL shown by Laravel (usually `http://127.0.0.1:8000`).
+
+## Project Map (app layer)
+
+- `routes/web.php`: web entry route (`/`)
+- `routes/api.php`: API endpoints under `/api`
+- `app/Http/Controllers`: API controller logic
+- `app/Models`: Eloquent models (`Game`, `Player`)
+- `database/migrations`: relational schema
+- `resources/views/welcome.blade.php`: page shell
+- `resources/js/app.js`: Vue bootstrap
+- `resources/js/components/LeanStartupGame.vue`: main gameplay and API calls
+
+## Recommended Next Fixes
+
+1. Align route method names (`GameController::new` vs existing `post`).
+2. Implement and register `/api/game/join` endpoint.
+3. Add feature tests for game creation/join flows.
+4. Consider moving static login hash authentication to Laravel auth middleware if real users are needed.
