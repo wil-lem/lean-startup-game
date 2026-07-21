@@ -176,8 +176,8 @@ How to generate `APP_KEY`:
 
 1. Installs PHP and Node dependencies (`composer install`, `npm ci`).
 2. Builds frontend assets (`npm run build`).
-3. Caches Laravel config/routes for production.
-4. Starts Laravel on `0.0.0.0:${PORT}` so Traefik can route traffic to the container.
+3. Starts Laravel on `0.0.0.0:${PORT}` so Traefik can route traffic to the container.
+4. Rebuilds Laravel config/routes cache at container start using runtime env values.
 
 ### Notes
 
@@ -229,6 +229,19 @@ If build fails at `php artisan view:cache` with `View path not found.`:
 Reason:
 
 - Some build-time environments provide Laravel env/config values that make view cache path resolution fail during image build, while runtime rendering still works normally.
+
+### Troubleshooting: assets load over HTTP (CORS/mixed-content behind Traefik)
+
+If browser dev tools show asset URLs using `http://` while your domain is `https://`:
+
+1. Ensure `APP_URL` is `https://your-domain.example` in Coolify env variables.
+2. Optionally set `ASSET_URL=https://your-domain.example`.
+3. Redeploy so runtime cache is rebuilt with current env values.
+
+This repository is configured to:
+
+- trust forwarded proxy headers (`X-Forwarded-Proto`) in Laravel, and
+- avoid build-time config caching that can bake incorrect `http` values into the image.
 
 ## Project Map (app layer)
 
